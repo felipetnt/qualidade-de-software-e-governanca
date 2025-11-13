@@ -8,8 +8,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.test.web.servlet.result.StatusResultMatchers;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import br.com.tinylink.api.utils.ShortenerUtil;
 
@@ -24,7 +22,7 @@ class ShortenerUrlTests {
     private MockMvc mockMvc;
 
     @Autowired
-    ShortenerUtil shortenerUtil;
+    private ShortenerUtil shortenerUtil;
 
     @Test
     public void isAliveApi() throws Exception {
@@ -33,23 +31,20 @@ class ShortenerUrlTests {
     }
 
     @Test
-    public void isShortenerUrl() throws Exception{
+    public void isShortenerUrl() {
         String url = "https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine/5.10.0";
         boolean isShortened = shortenerUtil.shortener(url) != null;
         Assertions.assertTrue(isShortened);
     }
 
-	@Test
-	public void wasRedirected() throws Exception{
-
+    @Test
+    public void wasRedirected() throws Exception {
         String url = "https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine/5.10.0";
-		String shortenedUrl = shortenerUtil.shortener(url);
+        String shortenedUrl = shortenerUtil.shortener(url);
         String[] splitUrl = shortenedUrl.split("/");
-        String code = splitUrl[ splitUrl.length - 1 ];
+        String code = splitUrl[splitUrl.length - 1];
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/tinylink/"+code))
-		    .andExpect(MockMvcResultMatchers.redirectedUrl(url));
-	}
-
-
+        mockMvc.perform(MockMvcRequestBuilders.get("/tinylink/" + code))
+                .andExpect(MockMvcResultMatchers.redirectedUrl(url));
+    }
 }

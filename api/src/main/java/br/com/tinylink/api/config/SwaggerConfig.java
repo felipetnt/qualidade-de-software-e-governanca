@@ -9,7 +9,7 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi publicApi() {
         return GroupedOpenApi.builder()
-                .group("api") 
+                .group("api")
                 .packagesToScan("br.com.tinylink.api.controllers")
                 .build();
     }

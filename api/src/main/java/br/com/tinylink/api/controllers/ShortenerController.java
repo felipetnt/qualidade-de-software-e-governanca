@@ -2,16 +2,11 @@ package br.com.tinylink.api.controllers;
 
 import java.util.Optional;
 
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.view.RedirectView;
 
 import br.com.tinylink.api.models.Link;
@@ -24,28 +19,36 @@ import br.com.tinylink.api.utils.ShortenerUtil;
 public class ShortenerController {
 
     @Autowired
-    LinkService linkService;
+    private LinkService linkService;
 
     @Autowired
-    ShortenerUtil shortenerUtil;
+    private ShortenerUtil shortenerUtil;
 
     @GetMapping("/{code}")
     public RedirectView redirect(@PathVariable Integer code) {
-        RedirectView redirectView = new RedirectView();
         Optional<Link> link = linkService.findLinkByCode(code);
-        redirectView.setUrl(link.get().getUrl());
 
+        if (link.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Link não encontrado");
+        }
+
+        RedirectView redirectView = new RedirectView();
+        redirectView.setUrl(link.get().getUrl());
         return redirectView;
     }
 
-    @PostMapping()
-    public String shortener(@RequestBody Entry entry){
-        return shortenerUtil.shortener(entry.url);
+    @PostMapping
+    public ResponseEntity<String> shortener(@RequestBody Entry entry) {
+        String shortUrl = shortenerUtil.shortener(entry.getUrl());
+        if (shortUrl == null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao encurtar URL");
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(shortUrl);
     }
 
     @GetMapping
-    public ResponseEntity<Object> ping(){
-        return new ResponseEntity<>("pong", HttpStatus.ACCEPTED);
+    public ResponseEntity<String> ping() {
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body("pong");
     }
-
 }
